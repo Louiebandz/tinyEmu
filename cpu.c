@@ -55,7 +55,7 @@ void step() {
             reg = inst >> 16 & 0xff;
             address = decoded->address;
             if (address > 1023 || reg > 16) {
-                printf("Address/Register out of bounds.\n");
+                printf("LDR Address/Register out of bounds.\n");
                 exit(-1);
             }
             registers[reg] = memory_fetch_word(address);
@@ -65,7 +65,7 @@ void step() {
             reg = inst >> 16 & 0xff;
             address = decoded->address;
             if (address > 1023 || reg > 16) {
-                printf("Address/Register out of bounds.\n");
+                printf("STR Address/Register out of bounds.\n");
                 exit(-1);
             }
             registers[reg] = address;
@@ -76,7 +76,7 @@ void step() {
             address = decoded->address;
             reg1 = inst >> 8 & 0xff;
             if (address > 1023 || (reg0 > 16 || reg1 > 16)) {
-                printf("Address/Register out of bounds.\n");
+                printf("LDX Address/Register out of bounds.\n");
                 exit(-1);
             }
             registers[address] = memory_fetch_word(registers[reg0] + reg1);
@@ -91,6 +91,10 @@ void step() {
             set_reg(PC, pc);
             break;
         case MOV:
+            if (decoded->address > 1023 || (decoded->rn > 16 || decoded->rm > 16)) {
+                printf("MOV Address/Register out of bounds.\n");
+                exit(-1);
+            }
             rn_loc = get_reg(decoded->rn);
             if (decoded->condition == 128) {
                 move = rn_loc;
@@ -111,7 +115,7 @@ void step() {
             reg1 = inst & 0xff;
             address = decoded->address;
             if (address > 1023 || (reg0 > 16 || reg1 > 16)) {
-                printf("Address/Register out of bounds.\n");
+                printf("SUB Address/Register out of bounds.\n");
                 exit(-1);
             }
             registers[address] = registers[reg0] - registers[reg1];
@@ -122,7 +126,7 @@ void step() {
             reg1 = inst & 0xff;
             address = decoded->address;
             if (address > 1023 || (reg0 > 16 || reg1 > 16)) {
-                printf("Address/Register out of bounds.\n");
+                printf("MUL Address/Register out of bounds.\n");
                 exit(-1);
             }
             registers[address] = registers[reg0] * registers[reg1];
@@ -133,7 +137,7 @@ void step() {
             reg1 = inst & 0xff;
             address = inst >> 16 & 0xff;
             if (address > 1023 || (reg0 > 16 || reg1 > 16)) {
-                printf("Address/Register out of bounds.\n");
+                printf("DIV Address/Register out of bounds.\n");
                 exit(-1);
             }
             registers[address] = registers[reg1] / registers[reg0];
@@ -144,7 +148,7 @@ void step() {
             reg1 = inst & 0xff;
             address = decoded->address;
             if (address > 1023 || (reg0 > 16 || reg1 > 16)) {
-                printf("Address/Register out of bounds.\n");
+                printf("AND Address/Register out of bounds.\n");
                 exit(-1);
             }
             registers[address] = registers[reg0] & registers[reg1];
@@ -155,7 +159,7 @@ void step() {
             reg1 = inst & 0xff;
             address = decoded->address;
             if (address > 1023 || (reg0 > 16 || reg1 > 16)) {
-                printf("Address/Register out of bounds.\n");
+                printf("ORR Address/Register out of bounds.\n");
                 exit(-1);
             }
             registers[address] = registers[reg0] | registers[reg1];
@@ -166,7 +170,7 @@ void step() {
             reg1 = inst & 0xff;
             address = decoded->address;
             if (address > 1023 || (reg0 > 16 || reg1 > 16)) {
-                printf("Address/Register out of bounds.\n");
+                printf("EOR Address/Register out of bounds.\n");
                 exit(-1);
             }
             registers[address] = registers[reg0] ^ registers[reg1];
@@ -176,7 +180,11 @@ void step() {
             reg1 = decoded->rm;
             reg2 = decoded->rn;
             if (reg1 > 16 || reg2 > 16) {
-                printf("Register out of bounds.\n");
+                printf("CMP Register out of bounds.\n");
+                exit(-1);
+            }
+            if (decoded->address > 1023) {
+                printf("CMP Address out of bounds.\n");
                 exit(-1);
             }
             eq = registers[reg1] == registers[reg2];
